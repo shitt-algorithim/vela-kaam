@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Puzzle For You</title>
+
+<style>
+
+body{
+font-family:Arial;
+text-align:center;
+background:#ffe6f2;
+margin:0;
+padding:20px;
+}
+
+h1{
+color:#ff4d88;
+}
+
+button{
+padding:12px 18px;
+border:none;
+border-radius:8px;
+background:#ff4d88;
+color:white;
+font-size:16px;
+margin-top:15px;
+}
+
+input{
+padding:12px;
+width:80%;
+max-width:300px;
+border-radius:8px;
+border:1px solid #ccc;
+margin-top:10px;
+}
+
+#puzzle{
+display:grid;
+grid-template-columns:repeat(3,90px);
+gap:5px;
+justify-content:center;
+margin-top:20px;
+}
+
+.tile{
+width:90px;
+height:90px;
+background:#ff4d88;
+color:white;
+font-size:26px;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🧩 Solve This Puzzle</h1>
+
+<div id="puzzle"></div>
+
+<div id="photoPage" style="display:none">
+
+<h2>You solved it 🎉</h2>
+
+<img src="photo.jpg" width="280">
+
+<p>
+I don't know if you'll like this or find it weird.  
+Just something small I thought of doing.  
+Hope you like it 😊
+</p>
+
+<button onclick="startQuestions()">Continue</button>
+
+</div>
+
+<form id="questionsPage" action="https://formspree.io/f/mjgagdnw" method="POST" style="display:none"></form>
+
+<script>
+
+let tiles=[1,2,3,4,5,6,7,8,""]
+
+let puzzle=document.getElementById("puzzle")
+
+function draw(){
+
+puzzle.innerHTML=""
+
+tiles.forEach((t,i)=>{
+
+let d=document.createElement("div")
+
+d.className="tile"
+
+d.innerHTML=t
+
+d.onclick=()=>move(i)
+
+if(t==="") d.style.background="#ffd6e6"
+
+puzzle.appendChild(d)
+
+})
+
+}
+
+function move(i){
+
+let empty=tiles.indexOf("")
+
+let valid=[i-1,i+1,i-3,i+3]
+
+if(valid.includes(empty)){
+
+[tiles[i],tiles[empty]]=[tiles[empty],tiles[i]]
+
+draw()
+
+check()
+
+}
+
+}
+
+function check(){
+
+let win=[1,2,3,4,5,6,7,8,""]
+
+if(JSON.stringify(tiles)==JSON.stringify(win)){
+
+puzzle.style.display="none"
+
+document.getElementById("photoPage").style.display="block"
+
+}
+
+}
+
+draw()
+
+const questions=[
+
+"Do I have the right to know what you like? If yes, then let me know by typing your favourite things below like color, place, etc? 😊",
+
+"What is your favourite memory with me? 💭",
+
+"Do you like me? If yes, Would you like to go out for a date with me? ❤️",
+
+"Agar tune yes kia hai pichla by any chance so please enter the date or a month you would like to go on 😄",
+
+"Anything else I should keep in my mind? 😄",
+
+"What do you think about this puzzle? 😊"
+
+]
+
+let current=0
+
+function startQuestions(){
+
+document.getElementById("photoPage").style.display="none"
+
+let form=document.getElementById("questionsPage")
+
+form.style.display="block"
+
+showQuestion()
+
+}
+
+function showQuestion(){
+
+let form=document.getElementById("questionsPage")
+
+form.innerHTML=`
+
+<h2>${questions[current]}</h2>
+
+<input name="answer${current}" required>
+
+<br>
+
+<button type="button" onclick="next()">Next</button>
+
+`
+
+}
+
+function next(){
+
+current++
+
+if(current<questions.length){
+
+showQuestion()
+
+}else{
+
+let form=document.getElementById("questionsPage")
+
+form.innerHTML=`
+
+<h2>Thank you for answering ❤️</h2>
+
+<button type="submit">Send Answers</button>
+
+<button type="button" onclick="showSecret()">Open Secret Message 💌</button>
+
+`
+
+}
+
+}
+
+function showSecret(){
+
+document.body.innerHTML=`
+
+<h1>❤️ A Message For You ❤️</h1>
+
+<p style="max-width:600px;margin:auto;font-size:20px">
+
+From the moment you started this puzzle  
+I hoped you would reach this message.  
+
+You are really special to me  
+and I enjoy talking to you.  
+
+Maybe this is the start of something beautiful ✨  
+
+Dekho yeah jo phle tumne pda kuch gpt ne likha hai mene nhi likha bdia lga toh chod dia esa hi bki tum 110 km/p+ ki speed se gu khalo photo nhi bhejti ho agr bhejogi toh view once mein esa thodi hota hai bhut dikkt hoti hai bki ab mera dimaag nhi chl ra ky likhna hai . 😴❤️
+
+</p>
+
+`
+
+heartRain()
+
+}
+
+function heartRain(){
+
+setInterval(()=>{
+
+let h=document.createElement("div")
+
+h.innerHTML="❤️"
+
+h.style.position="fixed"
+
+h.style.left=Math.random()*100+"%"
+
+h.style.top="-20px"
+
+h.style.fontSize="24px"
+
+h.style.transition="top 3s linear"
+
+document.body.appendChild(h)
+
+setTimeout(()=>{
+
+h.style.top="100vh"
+
+},50)
+
+setTimeout(()=>{
+
+h.remove()
+
+},3000)
+
+},200)
+
+}
+
+</script>
+
+</body>
+</html>
