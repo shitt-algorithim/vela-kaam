@@ -3,7 +3,6 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Puzzle For You</title>
 
 <style>
@@ -12,7 +11,6 @@ body{
 font-family:Arial;
 text-align:center;
 background:#ffe6f2;
-margin:0;
 padding:20px;
 }
 
@@ -20,8 +18,25 @@ h1{
 color:#ff4d88;
 }
 
+#puzzle{
+display:grid;
+grid-template-columns:repeat(3,100px);
+gap:4px;
+justify-content:center;
+margin-top:20px;
+}
+
+.tile{
+width:100px;
+height:100px;
+background-image:url("photo.jpg");
+background-size:300px 300px;
+border-radius:8px;
+cursor:pointer;
+}
+
 button{
-padding:12px 18px;
+padding:12px 20px;
 border:none;
 border-radius:8px;
 background:#ff4d88;
@@ -31,32 +46,12 @@ margin-top:15px;
 }
 
 input{
-padding:12px;
+padding:10px;
 width:80%;
 max-width:300px;
-border-radius:8px;
-border:1px solid #ccc;
 margin-top:10px;
-}
-
-#puzzle{
-display:grid;
-grid-template-columns:repeat(3,90px);
-gap:5px;
-justify-content:center;
-margin-top:20px;
-}
-
-.tile{
-width:90px;
-height:90px;
-background:#ff4d88;
-color:white;
-font-size:26px;
-display:flex;
-align-items:center;
-justify-content:center;
-border-radius:10px;
+border-radius:6px;
+border:1px solid #ccc;
 }
 
 </style>
@@ -67,6 +62,7 @@ border-radius:10px;
 <h1>🧩 Solve This Puzzle</h1>
 
 <div id="puzzle"></div>
+
 
 <div id="photoPage" style="display:none">
 
@@ -84,69 +80,90 @@ Hope you like it 😊
 
 </div>
 
-<form id="questionsPage" action="https://formspree.io/f/mjgagdnw" method="POST" style="display:none"></form>
+
+<div id="questionsPage" style="display:none"></div>
+
 
 <script>
 
-let tiles=[1,2,3,4,5,6,7,8,""]
+/* IMAGE PUZZLE */
+
+let order=[0,1,2,3,4,5,6,7,8]
+
+order.sort(()=>Math.random()-0.5)
 
 let puzzle=document.getElementById("puzzle")
 
-function draw(){
+let selected=null
 
-puzzle.innerHTML=""
+order.forEach(i=>{
 
-tiles.forEach((t,i)=>{
+let tile=document.createElement("div")
 
-let d=document.createElement("div")
+tile.className="tile"
 
-d.className="tile"
+let x=(i%3)*-100
+let y=Math.floor(i/3)*-100
 
-d.innerHTML=t
+tile.style.backgroundPosition=x+"px "+y+"px"
 
-d.onclick=()=>move(i)
+tile.onclick=function(){
 
-if(t==="") d.style.background="#ffd6e6"
+if(selected==null){
 
-puzzle.appendChild(d)
+selected=this
+this.style.outline="3px solid red"
+
+}else{
+
+let temp=this.style.backgroundPosition
+this.style.backgroundPosition=selected.style.backgroundPosition
+selected.style.backgroundPosition=temp
+
+selected.style.outline="none"
+selected=null
+
+checkWin()
+
+}
+
+}
+
+puzzle.appendChild(tile)
 
 })
 
-}
 
-function move(i){
+function checkWin(){
 
-let empty=tiles.indexOf("")
+let tiles=document.querySelectorAll(".tile")
 
-let valid=[i-1,i+1,i-3,i+3]
+let correct=true
 
-if(valid.includes(empty)){
+tiles.forEach((t,i)=>{
 
-[tiles[i],tiles[empty]]=[tiles[empty],tiles[i]]
+let x=(i%3)*-100
+let y=Math.floor(i/3)*-100
 
-draw()
+if(t.style.backgroundPosition!=x+"px "+y+"px"){
 
-check()
-
-}
+correct=false
 
 }
 
-function check(){
+})
 
-let win=[1,2,3,4,5,6,7,8,""]
-
-if(JSON.stringify(tiles)==JSON.stringify(win)){
+if(correct){
 
 puzzle.style.display="none"
-
 document.getElementById("photoPage").style.display="block"
 
 }
 
 }
 
-draw()
+
+/* QUESTIONS */
 
 const questions=[
 
@@ -165,14 +182,12 @@ const questions=[
 ]
 
 let current=0
+let answers=[]
 
 function startQuestions(){
 
 document.getElementById("photoPage").style.display="none"
-
-let form=document.getElementById("questionsPage")
-
-form.style.display="block"
+document.getElementById("questionsPage").style.display="block"
 
 showQuestion()
 
@@ -180,23 +195,27 @@ showQuestion()
 
 function showQuestion(){
 
-let form=document.getElementById("questionsPage")
+let q=questions[current]
 
-form.innerHTML=`
+document.getElementById("questionsPage").innerHTML=`
 
-<h2>${questions[current]}</h2>
+<h2>${q}</h2>
 
-<input name="answer${current}" required>
+<input id="ans">
 
 <br>
 
-<button type="button" onclick="next()">Next</button>
+<button onclick="next()">Next</button>
 
 `
 
 }
 
 function next(){
+
+let val=document.getElementById("ans").value
+
+answers.push(val)
 
 current++
 
@@ -206,27 +225,46 @@ showQuestion()
 
 }else{
 
-let form=document.getElementById("questionsPage")
+showAnswers()
 
-form.innerHTML=`
+}
+
+}
+
+function showAnswers(){
+
+let text=""
+
+answers.forEach((a,i)=>{
+
+text+=`<p><b>Answer ${i+1}:</b> ${a}</p>`
+
+})
+
+document.getElementById("questionsPage").innerHTML=`
 
 <h2>Thank you for answering ❤️</h2>
 
-<button type="submit">Send Answers</button>
+${text}
 
-<button type="button" onclick="showSecret()">Open Secret Message 💌</button>
+<p style="color:#ff4d88;font-weight:bold">
+Take a screenshot and send it to me 📸😄
+</p>
+
+<button onclick="showSecret()">Open Secret Message 💌</button>
 
 `
 
 }
 
-}
+
+/* SECRET MESSAGE */
 
 function showSecret(){
 
 document.body.innerHTML=`
 
-<h1>❤️ A Message For You ❤️</h1>
+<h1 style="color:#ff4d88">❤️ A Message For You ❤️</h1>
 
 <p style="max-width:600px;margin:auto;font-size:20px">
 
@@ -248,6 +286,9 @@ heartRain()
 
 }
 
+
+/* HEART RAIN */
+
 function heartRain(){
 
 setInterval(()=>{
@@ -257,28 +298,16 @@ let h=document.createElement("div")
 h.innerHTML="❤️"
 
 h.style.position="fixed"
-
 h.style.left=Math.random()*100+"%"
-
 h.style.top="-20px"
-
 h.style.fontSize="24px"
-
 h.style.transition="top 3s linear"
 
 document.body.appendChild(h)
 
-setTimeout(()=>{
+setTimeout(()=>{h.style.top="100vh"},50)
 
-h.style.top="100vh"
-
-},50)
-
-setTimeout(()=>{
-
-h.remove()
-
-},3000)
+setTimeout(()=>{h.remove()},3000)
 
 },200)
 
